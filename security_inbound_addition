@@ -1,0 +1,11 @@
+#!/bin/bash
+aws ec2 describe-security-groups --profile 295291748983|grep GroupId|awk '{print $2}'| sed 's/\"//g'|sed 's/GroupId://g'|sed 's/,//g'|awk '!a[$0]++'>sg.txt
+cat sg.txt
+for i in `cat sg.txt`;
+do
+sg=$i
+echo $sg
+aws ec2 authorize-security-group-ingress --group-id $sg --ip-permissions FromPort=9100,ToPort=9100,IpProtocol=tcp,IpRanges='[{CidrIp=0.0.0.0/0,Description=prometheus node exporter config}]' --profile 295291748983
+aws ec2 authorize-security-group-ingress --group-id $sg --ip-permissions FromPort=22,ToPort=22,IpProtocol=tcp,IpRanges='[{CidrIp=49.207.210.138/32,Description=Rakesh}]' --profile 295291748983
+
+done
