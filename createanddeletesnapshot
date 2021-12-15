@@ -1,0 +1,26 @@
+#!/bin/bash
+
+aws_profile=295291748983
+cur_date=$(date +%Y-%m-%d)
+past_date=$(date --date="-3 days" +%Y-%m-%d)
+for i in `cat volume.txt`
+do
+           
+        #ins_name=$(aws ec2 describe-volumes   --volume-ids $i --profile $aws_profile|grep Value|awk '{print $2}'| sed 's/\"//g')
+        #ins_id=$(aws ec2 describe-volumes   --volume-ids $i --profile $aws_profile|grep InstanceId|awk '{print$2}'| sed 's/\"//g'|sed 's/\,//g')
+        #snap_name=$ins_name-$ins_id-$cur_date
+        #echo snap_name=$snap_name
+        echo "Creating Snapshots for $i"
+        #aws ec2 create-snapshot --volume-id $i --description "Mongobkptest" --tag-specifications 'ResourceType=snapshot,Tags=[{Key=Name,Value='$snap_name'}]' --profile $aws_profile
+        volume_snap= aws ec2 describe-snapshots --filters Name=volume-id,Values=$i --query 'Snapshots[?StartTime <= `2021-12-12`].{id:SnapshotId}' --output text --profile $aws_profile 
+        echo "Deletion snapshotlist $volume_snap"
+        aws ec2 describe-snapshots --filters Name=volume-id,Values=$i --query 'Snapshots[?StartTime <= `'$past_date'`].{id:SnapshotId}' --output text --profile $aws_profile >  snapshot.txt
+        for d in `cat snapshot.txt`
+        do
+                #aws ec2 delete-snapshot --snapshot-id $d 
+                echo delete $d
+        done
+
+done        
+
+
