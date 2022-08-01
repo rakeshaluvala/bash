@@ -7,7 +7,8 @@ snap_loc=/home/ec2-user/snapshot/snapshots.txt
 
 for profile in $aws_profile;do
 for reg in $region;do
-volumeids=$(aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" --query "Reservations[*].Instances[?!contains(Tags[].Key,  'aws:ec2launchtemplate:id')]"  --output json --profile $profile --region $reg |grep VolumeId|awk '{print $2}'|tr -d \")
+#volumeids=$(aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" --query "Reservations[*].Instances[?!contains(Tags[].Key,  'aws:ec2launchtemplate:id')]"  --output json --profile $profile --region $reg |grep VolumeId|awk '{print $2}'|tr -d \")
+volumeids=$(aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" --query 'Reservations[*].Instances[?InstanceLifecycle!=`spot`]' --output json --profile $profile --region $reg|grep VolumeId|awk '{print $2}'|tr -d '""')
 for vol in $volumeids;do
 ins_id=$(aws ec2 describe-volumes   --volume-ids $vol --profile $profile --region $reg|grep InstanceId |awk '{print$2}'| sed 's/\"//g'|sed 's/\,//g')
 snap_name=$vol-$ins_id-$cur_date
